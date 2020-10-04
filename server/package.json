@@ -5,9 +5,19 @@
   "main": "index.js",
   "author": "Ryan Salcido",
   "license": "ISC",
+  "jest": {
+    "testEnvironment": "node"
+  },
+  "config": {
+    "mongodbMemoryServer": {
+      "version": "4.2.2"
+    }
+  },
   "scripts": {
     "dev": "nodemon index.js",
-    "lint": "eslint . --fix"
+    "test": "jest --runInBand --testTimeout=15000",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix"
   },
   "dependencies": {
     "bcrypt": "^5.0.0",
@@ -19,6 +29,9 @@
   },
   "devDependencies": {
     "eslint": "^7.10.0",
-    "nodemon": "^2.0.4"
+    "jest": "^26.4.2",
+    "mongodb-memory-server": "^6.9.0",
+    "nodemon": "^2.0.4",
+    "supertest": "^5.0.0"
   }
 }

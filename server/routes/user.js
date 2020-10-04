@@ -13,7 +13,7 @@ userRouter.post("/register", validateForm(registerSchema), (req, res, next) => {
     if(err) {
       next(ApiError.handleError(500, "Error has occurred while searching database"));
     } else if(user) {
-      next(ApiError.handleError(400, "Email is already in use."));
+      next(ApiError.handleError(400, "Email is already in use"));
     } else {
       const newUser = new User({ password, name: name.trim(), email: normalizedEmail });
       newUser.save(err => {
