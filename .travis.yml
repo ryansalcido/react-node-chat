@@ -6,6 +6,10 @@ addons:
   ssh_known_hosts:
     - 208.68.39.96
 
+cache:
+  directories:
+    - server/node_modules/.cache/mongodb-memory-server
+
 script:
   - cd client/
   - npm install
@@ -26,4 +30,4 @@ deploy:
   skip_cleanup: true
   script: ssh $USER@$IP_ADDRESS "./deploy_react_node_chat.sh"
   on:
-    - branch: main
+    branch: main
