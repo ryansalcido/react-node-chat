@@ -37,9 +37,9 @@ userRouter.post("/register", validateForm(registerSchema), (req, res, next) => {
   });
 });
 
-userRouter.post("/login", validateForm(loginSchema), 
-  passport.authenticate("local", { session: false, failWithError: true }),
-  (req, res, next) => { //handle success
+userRouter.post("/login", 
+  validateForm(loginSchema), passport.authenticate("local", { session: false }),
+  (req, res, next) => {
     if(req.isAuthenticated()) {
       const { _id, name, email } = req.user;
       const token = signToken(_id);
@@ -48,19 +48,12 @@ userRouter.post("/login", validateForm(loginSchema),
         isAuthenticated: true, message: "Successfully logged in!", user: { name, email }
       });
     } else {
-      next(ApiError.handleError(401, "Invalid email or password"));
+      return next(ApiError.handleError(401, "Invalid email or password"));
     }
-  },
-  (err, req, res, next) => { //handle error
-    if(err.status) { //401 error from passport
-      next(ApiError.handleError(err.status, err.message));
-    }
-    //all other errors
-    next(ApiError.handleError(err.statusCode, err.payload));
   }
 );
 
-userRouter.get("/isAuthenticated", passport.authenticate("jwt", { session: false }), (req, res) => {
+userRouter.get("/is-authenticated", passport.authenticate("jwt", { session: false }), (req, res) => {
   const { name, email } = req.user;
   return handleSuccess(res, 200, { isAuthenticated: true, message: "Authenticated", user: { name, email } });
 });
