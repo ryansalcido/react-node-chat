@@ -58,4 +58,11 @@ userRouter.get("/is-authenticated", passport.authenticate("jwt", { session: fals
   return handleSuccess(res, 200, { isAuthenticated: true, message: "Authenticated", user: { name, email } });
 });
 
+userRouter.get("/logout", (req, res) => {
+  res.clearCookie("access_token");
+  return handleSuccess(res, 200, {
+    isAuthenticated: false, message: "Successfully logged out!", user: { name: "", email: "" }
+  });
+});
+
 module.exports = userRouter;

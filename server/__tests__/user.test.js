@@ -7,7 +7,7 @@ describe("/register route", () => {
   afterAll(async () => await dbHandler.destroyDB());
 
   //success
-  test("register a new user - success", async () => {
+  it("register - should successfully register user", async () => {
     const res = await request(app)
       .post("/chat/api/user/register")
       .send({ name: "John Doe", email: "johndoe@test.com", password: "johndoe123" });
@@ -16,7 +16,7 @@ describe("/register route", () => {
   });
 
   //email already in use
-  test("email already in user - error", async () => {
+  it("register - should throw 'Email already in use' error", async () => {
     const res = await request(app)
       .post("/chat/api/user/register")
       .send({ name: "John Doe", email: "johndoe@test.com", password: "johndoe123" });
@@ -25,7 +25,7 @@ describe("/register route", () => {
   });
 
   //empty input
-  test("empty input - error", async () => {
+  it("register - should throw 'Required' error for empty input", async () => {
     const res = await request(app)
       .post("/chat/api/user/register")
       .send({});
@@ -34,7 +34,7 @@ describe("/register route", () => {
   });
 
   //missing name
-  test("missing name - error", async () => {
+  it("register - should throw 'Required' error for missing name field", async () => {
     const res = await request(app)
       .post("/chat/api/user/register")
       .send({ email: "test@test.com", password: "testing123" });
@@ -43,7 +43,7 @@ describe("/register route", () => {
   });
 
   //missing email
-  test("missing email - error", async () => {
+  it("register - should throw 'Required' error for missing email field", async () => {
     const res = await request(app)
       .post("/chat/api/user/register")
       .send({ name: "testing", password: "testing123" });
@@ -52,7 +52,7 @@ describe("/register route", () => {
   });
 
   //missing password
-  test("missing password - error", async () => {
+  it("register - should throw 'Required' error for missing password field", async () => {
     const res = await request(app)
       .post("/chat/api/user/register")
       .send({ name: "testing", email: "test@test.com" });
@@ -61,7 +61,7 @@ describe("/register route", () => {
   });
 
   //invalid name
-  test("invalid name - error", async () => {
+  it("register - should throw error for invalid name", async () => {
     const res = await request(app)
       .post("/chat/api/user/register")
       .send({ name: "t", email: "test@test.com", password: "testing123" });
@@ -70,7 +70,7 @@ describe("/register route", () => {
   });
 
   //invalid email
-  test("invalid email - error", async () => {
+  it("register - should throw error for invalid email address", async () => {
     const res = await request(app)
       .post("/chat/api/user/register")
       .send({ name: "testing", email: "test@", password: "testing123" });
@@ -79,7 +79,7 @@ describe("/register route", () => {
   });
 
   //invalid password
-  test("invalid email - error", async () => {
+  it("register - should throw error for not meeting password length requirement", async () => {
     const res = await request(app)
       .post("/chat/api/user/register")
       .send({ name: "testing", email: "test@test.com", password: "test" });
@@ -93,7 +93,7 @@ describe("/login route", () => {
   afterAll(async () => await dbHandler.destroyDB());
 
   //empty input
-  test("empty input - error", async () => {
+  it("login - should throw 'Required' error for empty input", async () => {
     const res = await request(app)
       .post("/chat/api/user/login")
       .send({});
@@ -102,7 +102,7 @@ describe("/login route", () => {
   });
 
   //unknown user
-  test("login with unknwon user - error", async () => {
+  it("login - should throw 'Unauthorized' error for invalid email/password", async () => {
     const res = await request(app)
       .post("/chat/api/user/login")
       .send({ email: "janedoe@test.com", password: "janedoe123" });
@@ -111,7 +111,7 @@ describe("/login route", () => {
   });
 
   //missing email
-  test("missing email - error", async () => {
+  it("login - should throw 'Required' error for missing email field", async () => {
     const res = await request(app)
       .post("/chat/api/user/login")
       .send({ password: "johndoe123" });
@@ -120,7 +120,7 @@ describe("/login route", () => {
   });
 
   //missing password
-  test("missing password - error", async () => {
+  it("login - should throw 'Required' error for missing password field", async () => {
     const res = await request(app)
       .post("/chat/api/user/login")
       .send({ password: "johndoe123" });
@@ -129,7 +129,7 @@ describe("/login route", () => {
   });
 
   //invalid email
-  test("invalid email - error", async () => {
+  it("login - should throw 'Unauthorized' error for invalid email address", async () => {
     const res = await request(app)
       .post("/chat/api/user/login")
       .send({ email: "johndoe", password: "johndoe123" });
@@ -138,7 +138,7 @@ describe("/login route", () => {
   });
 
   //invalid password
-  test("invalid email - error", async () => {
+  it("login - should throw 'Unauthorized' error for invalid password", async () => {
     const res = await request(app)
       .post("/chat/api/user/login")
       .send({ email: "johndoe@test.com", password: "johndoe" });
@@ -147,7 +147,7 @@ describe("/login route", () => {
   });
 
   //success - register and login
-  test("register a new user - success", async () => {
+  it("login - should successfully register user", async () => {
     const res = await request(app)
       .post("/chat/api/user/register")
       .send({ name: "John Doe", email: "johndoe@test.com", password: "johndoe123" });
@@ -155,7 +155,7 @@ describe("/login route", () => {
     expect(res.body.error).toEqual(false);
   });
 
-  test("login with registered user - success", async () => {
+  it("login - should successfully login", async () => {
     const res = await request(app)
       .post("/chat/api/user/login")
       .send({ email: "johndoe@test.com", password: "johndoe123" });
@@ -164,14 +164,14 @@ describe("/login route", () => {
   });
 });
 
-describe("/isAuthenticated route", () => {
+describe("/is-authenticated route", () => {
   beforeAll(async () => await dbHandler.createDB());
   afterAll(async () => await dbHandler.destroyDB());
 
   let token = null;
 
   //error - not logged in yet
-  test("unauthorized, not logged in - error", async () => {
+  it("is-authenticated - should throw 'Unauthorized' error when no user has logged in", async () => {
     const res = await request(app)
       .get("/chat/api/user/is-authenticated");
     expect(res.statusCode).toEqual(401);
@@ -179,7 +179,7 @@ describe("/isAuthenticated route", () => {
   });
 
   //error - registered but not logged in yet
-  test("register a new user - success", async () => {
+  it("is-authenticated - should successfully register user ", async () => {
     const res = await request(app)
       .post("/chat/api/user/register")
       .send({ name: "John Doe", email: "johndoe@test.com", password: "johndoe123" });
@@ -187,7 +187,7 @@ describe("/isAuthenticated route", () => {
     expect(res.body.error).toEqual(false);
   });
 
-  test("unauthorized, registered but not logged in - error", async () => {
+  it("is-authenticated - should throw 'Unauthorized' error when user has registered, but not logged in", async () => {
     const res = await request(app)
       .get("/chat/api/user/is-authenticated");
     expect(res.statusCode).toEqual(401);
@@ -195,7 +195,7 @@ describe("/isAuthenticated route", () => {
   });
 
   //success - logged in
-  test("login with registered user - success", async () => {
+  it("is-authenticated - should successfully login", async () => {
     const res = await request(app)
       .post("/chat/api/user/login")
       .send({ email: "johndoe@test.com", password: "johndoe123" });
@@ -204,12 +204,76 @@ describe("/isAuthenticated route", () => {
     expect(res.body.error).toEqual(false);
   });
 
-  test("is authenticated user - success", async () => {
+  it("is-authenticated - should successfully show user is logged in", async () => {
     const res = await request(app)
       .get("/chat/api/user/is-authenticated")
       .set("Cookie", token);
     expect(res.statusCode).toEqual(200);
     expect(res.body.error).toEqual(false);
     expect(res.body.payload.isAuthenticated).toEqual(true);
+  });
+});
+
+describe("/logout route for unauthenticated user", () => {
+  beforeAll(async () => await dbHandler.createDB());
+  afterAll(async () => await dbHandler.destroyDB());
+
+  //not logged in, no error -> success
+  it("logout - should return 200 status code even if user is not logged in", async () => {
+    const res = await request(app)
+      .get("/chat/api/user/logout");
+    expect(res.statusCode).toEqual(200);
+    expect(res.body.error).toEqual(false);
+    expect(res.body.payload.isAuthenticated).toEqual(false);
+  });
+});
+
+//"full user workflow - register, login, is-authenticated, logout"
+describe("/register -> /login -> /is-authenticated -> /logout -> /is-authenticated", () => {
+  beforeAll(async () => await dbHandler.createDB());
+  afterAll(async () => await dbHandler.destroyDB());
+
+  let token = null;
+
+  it("should successfully register user", async () => {
+    const res = await request(app)
+      .post("/chat/api/user/register")
+      .send({ name: "John Doe", email: "johndoe@test.com", password: "johndoe123" });
+    expect(res.statusCode).toEqual(201);
+    expect(res.body.error).toEqual(false);
+  });
+
+  it("should successfully login", async () => {
+    const res = await request(app)
+      .post("/chat/api/user/login")
+      .send({ email: "johndoe@test.com", password: "johndoe123" });
+    token = res.headers && res.headers["set-cookie"];
+    expect(res.statusCode).toEqual(200);
+    expect(res.body.error).toEqual(false);
+  });
+
+  it("should successfully show user is logged in", async () => {
+    const res = await request(app)
+      .get("/chat/api/user/is-authenticated")
+      .set("Cookie", token);
+    expect(res.statusCode).toEqual(200);
+    expect(res.body.error).toEqual(false);
+    expect(res.body.payload.isAuthenticated).toEqual(true);
+  });
+
+  it("should successfully logout", async () => {
+    const res = await request(app)
+      .get("/chat/api/user/logout")
+      .set("Cookie", token);
+    expect(res.statusCode).toEqual(200);
+    expect(res.body.error).toEqual(false);
+    expect(res.body.payload.isAuthenticated).toEqual(false);
+  });
+
+  it("should throw 'Unauthorized' error once user has logged out", async () => {
+    const res = await request(app)
+      .get("/chat/api/user/is-authenticated");
+    expect(res.statusCode).toEqual(401);
+    expect(res.text).toEqual("Unauthorized");
   });
 });
