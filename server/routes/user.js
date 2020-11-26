@@ -1,10 +1,20 @@
+require("../config/passport");
 const express = require("express");
+const passport = require("passport");
+const JWT = require("jsonwebtoken");
 const User = require("../models/User");
-const { registerSchema } = require("../utils/validationSchema");
+const { registerSchema, loginSchema } = require("../utils/validationSchema");
 const validateForm = require("../middlewares/validateForm");
 const { ApiError, handleSuccess } = require("../utils/apiStatus");
 
 const userRouter = express.Router();
+
+const signToken = (userID) => {
+  return JWT.sign({
+    iss: "react-node-chat",
+    sub: userID
+  }, process.env.JWT_SECRET, { expiresIn: "1h" });
+};
 
 userRouter.post("/register", validateForm(registerSchema), (req, res, next) => {
   const { name, email, password } = req.body;
@@ -24,6 +34,34 @@ userRouter.post("/register", validateForm(registerSchema), (req, res, next) => {
         }
       });
     }
+  });
+});
+
+userRouter.post("/login", 
+  validateForm(loginSchema), passport.authenticate("local", { session: false }),
+  (req, res, next) => {
+    if(req.isAuthenticated()) {
+      const { _id, name, email } = req.user;
+      const token = signToken(_id);
+      res.cookie("access_token", token, { httpOnly: true, sameSite: true });
+      return handleSuccess(res, 200, {
+        isAuthenticated: true, message: "Successfully logged in!", user: { name, email }
+      });
+    } else {
+      return next(ApiError.handleError(401, "Invalid email or password"));
+    }
+  }
+);
+
+userRouter.get("/is-authenticated", passport.authenticate("jwt", { session: false }), (req, res) => {
+  const { name, email } = req.user;
+  return handleSuccess(res, 200, { isAuthenticated: true, message: "Authenticated", user: { name, email } });
+});
+
+userRouter.get("/logout", (req, res) => {
+  res.clearCookie("access_token");
+  return handleSuccess(res, 200, {
+    isAuthenticated: false, message: "Successfully logged out!", user: { name: "", email: "" }
   });
 });
 

@@ -2,57 +2,27 @@ const dbHandler = require("../utils/mockDbHandler");
 const request = require("supertest");
 const app = require("../express");
 
-describe("Register express route", () => {
+describe("/register route", () => {
   beforeAll(async () => await dbHandler.createDB());
-
   afterAll(async () => await dbHandler.destroyDB());
 
-  const user = {
-    name: "John Doe",
-    email: "johndoe@test.com",
-    password: "johndoe123"
-  };
-
-  test("Register a new user", async () => {
+  it("register - should successfully register user", async () => {
     const res = await request(app)
       .post("/chat/api/user/register")
-      .send(user);
+      .send({ name: "John Doe", email: "johndoe@test.com", password: "johndoe123" });
     expect(res.statusCode).toEqual(201);
     expect(res.body.error).toEqual(false);
   });
 
-  test("Email already in use error", async () => {
+  it("register - should throw 'Email already in use' error", async () => {
     const res = await request(app)
       .post("/chat/api/user/register")
-      .send(user);
+      .send({ name: "John Doe", email: "johndoe@test.com", password: "johndoe123" });
     expect(res.statusCode).toEqual(400);
     expect(res.body.payload).toEqual("Email is already in use");
   });
 
-  test("Missing password field", async () => {
-    const res = await request(app)
-      .post("/chat/api/user/register")
-      .send({
-        name: "John Doe",
-        email: "johndoe@test.com"
-      });
-    expect(res.statusCode).toEqual(400);
-    expect(res.body.payload).toEqual("Required");
-  });
-
-  test("Invalid email address", async () => {
-    const res = await request(app)
-      .post("/chat/api/user/register")
-      .send({
-        name: "John Doe",
-        email: "johndoe",
-        password: "johndoe123"
-      });
-    expect(res.statusCode).toEqual(400);
-    expect(res.body.payload).toEqual("Invalid email address");
-  });
-
-  test("Empty user input", async () => {
+  it("register - should throw 'Required' error for empty input", async () => {
     const res = await request(app)
       .post("/chat/api/user/register")
       .send({});
@@ -60,27 +30,229 @@ describe("Register express route", () => {
     expect(res.body.payload).toEqual("Required");
   });
 
-  test("Name is too short", async () => {
+  it("register - should throw 'Required' error for missing name field", async () => {
     const res = await request(app)
       .post("/chat/api/user/register")
-      .send({
-        name: "",
-        email: "johndoe@test.com",
-        password: "johndoe123" 
-      });
+      .send({ email: "test@test.com", password: "testing123" });
+    expect(res.statusCode).toEqual(400);
+    expect(res.body.payload).toEqual("Required");
+  });
+
+  it("register - should throw 'Required' error for missing email field", async () => {
+    const res = await request(app)
+      .post("/chat/api/user/register")
+      .send({ name: "testing", password: "testing123" });
+    expect(res.statusCode).toEqual(400);
+    expect(res.body.payload).toEqual("Required");
+  });
+
+  it("register - should throw 'Required' error for missing password field", async () => {
+    const res = await request(app)
+      .post("/chat/api/user/register")
+      .send({ name: "testing", email: "test@test.com" });
+    expect(res.statusCode).toEqual(400);
+    expect(res.body.payload).toEqual("Required");
+  });
+
+  it("register - should throw error for invalid name", async () => {
+    const res = await request(app)
+      .post("/chat/api/user/register")
+      .send({ name: "t", email: "test@test.com", password: "testing123" });
     expect(res.statusCode).toEqual(400);
     expect(res.body.payload).toEqual("Must be at least 3 characters");
   });
 
-  test("Password is too short", async () => {
+  it("register - should throw error for invalid email address", async () => {
     const res = await request(app)
       .post("/chat/api/user/register")
-      .send({
-        name: "John Doe",
-        email: "johndoe@test.com",
-        password: "123"
-      });
+      .send({ name: "testing", email: "test@", password: "testing123" });
+    expect(res.statusCode).toEqual(400);
+    expect(res.body.payload).toEqual("Invalid email address");
+  });
+
+  it("register - should throw error for not meeting password length requirement", async () => {
+    const res = await request(app)
+      .post("/chat/api/user/register")
+      .send({ name: "testing", email: "test@test.com", password: "test" });
     expect(res.statusCode).toEqual(400);
     expect(res.body.payload).toEqual("Must be at least 8 characters");
+  });
+});
+
+describe("/login route", () => {
+  beforeAll(async () => await dbHandler.createDB());
+  afterAll(async () => await dbHandler.destroyDB());
+
+  it("login - should throw 'Required' error for empty input", async () => {
+    const res = await request(app)
+      .post("/chat/api/user/login")
+      .send({});
+    expect(res.statusCode).toEqual(400);
+    expect(res.body.payload).toEqual("Required");
+  });
+
+  it("login - should throw 'Unauthorized' error for invalid email/password", async () => {
+    const res = await request(app)
+      .post("/chat/api/user/login")
+      .send({ email: "janedoe@test.com", password: "janedoe123" });
+    expect(res.statusCode).toEqual(401);
+    expect(res.text).toEqual("Unauthorized");
+  });
+
+  it("login - should throw 'Required' error for missing email field", async () => {
+    const res = await request(app)
+      .post("/chat/api/user/login")
+      .send({ password: "johndoe123" });
+    expect(res.statusCode).toEqual(400);
+    expect(res.body.payload).toEqual("Required");
+  });
+
+  it("login - should throw 'Required' error for missing password field", async () => {
+    const res = await request(app)
+      .post("/chat/api/user/login")
+      .send({ password: "johndoe123" });
+    expect(res.statusCode).toEqual(400);
+    expect(res.body.payload).toEqual("Required");
+  });
+
+  it("login - should throw 'Unauthorized' error for invalid email address", async () => {
+    const res = await request(app)
+      .post("/chat/api/user/login")
+      .send({ email: "johndoe", password: "johndoe123" });
+    expect(res.statusCode).toEqual(401);
+    expect(res.text).toEqual("Unauthorized");
+  });
+
+  it("login - should throw 'Unauthorized' error for invalid password", async () => {
+    const res = await request(app)
+      .post("/chat/api/user/login")
+      .send({ email: "johndoe@test.com", password: "johndoe" });
+    expect(res.statusCode).toEqual(401);
+    expect(res.text).toEqual("Unauthorized");
+  });
+
+  it("login - should successfully register user", async () => {
+    const res = await request(app)
+      .post("/chat/api/user/register")
+      .send({ name: "John Doe", email: "johndoe@test.com", password: "johndoe123" });
+    expect(res.statusCode).toEqual(201);
+    expect(res.body.error).toEqual(false);
+  });
+
+  it("login - should successfully login", async () => {
+    const res = await request(app)
+      .post("/chat/api/user/login")
+      .send({ email: "johndoe@test.com", password: "johndoe123" });
+    expect(res.statusCode).toEqual(200);
+    expect(res.body.error).toEqual(false);
+  });
+});
+
+describe("/is-authenticated route", () => {
+  beforeAll(async () => await dbHandler.createDB());
+  afterAll(async () => await dbHandler.destroyDB());
+
+  let token = null;
+
+  it("is-authenticated - should throw 'Unauthorized' error when no user has logged in", async () => {
+    const res = await request(app)
+      .get("/chat/api/user/is-authenticated");
+    expect(res.statusCode).toEqual(401);
+    expect(res.text).toEqual("Unauthorized");
+  });
+
+  it("is-authenticated - should successfully register user ", async () => {
+    const res = await request(app)
+      .post("/chat/api/user/register")
+      .send({ name: "John Doe", email: "johndoe@test.com", password: "johndoe123" });
+    expect(res.statusCode).toEqual(201);
+    expect(res.body.error).toEqual(false);
+  });
+
+  it("is-authenticated - should throw 'Unauthorized' error when user has registered, but not logged in", async () => {
+    const res = await request(app)
+      .get("/chat/api/user/is-authenticated");
+    expect(res.statusCode).toEqual(401);
+    expect(res.text).toEqual("Unauthorized");
+  });
+
+  it("is-authenticated - should successfully login", async () => {
+    const res = await request(app)
+      .post("/chat/api/user/login")
+      .send({ email: "johndoe@test.com", password: "johndoe123" });
+    token = res.headers && res.headers["set-cookie"];
+    expect(res.statusCode).toEqual(200);
+    expect(res.body.error).toEqual(false);
+  });
+
+  it("is-authenticated - should successfully show user is logged in", async () => {
+    const res = await request(app)
+      .get("/chat/api/user/is-authenticated")
+      .set("Cookie", token);
+    expect(res.statusCode).toEqual(200);
+    expect(res.body.error).toEqual(false);
+    expect(res.body.payload.isAuthenticated).toEqual(true);
+  });
+});
+
+describe("/logout route for unauthenticated user", () => {
+  beforeAll(async () => await dbHandler.createDB());
+  afterAll(async () => await dbHandler.destroyDB());
+
+  it("logout - should return 200 status code even if user is not logged in", async () => {
+    const res = await request(app)
+      .get("/chat/api/user/logout");
+    expect(res.statusCode).toEqual(200);
+    expect(res.body.error).toEqual(false);
+    expect(res.body.payload.isAuthenticated).toEqual(false);
+  });
+});
+
+describe("/register -> /login -> /is-authenticated -> /logout -> /is-authenticated", () => {
+  beforeAll(async () => await dbHandler.createDB());
+  afterAll(async () => await dbHandler.destroyDB());
+
+  let token = null;
+
+  it("should successfully register user", async () => {
+    const res = await request(app)
+      .post("/chat/api/user/register")
+      .send({ name: "John Doe", email: "johndoe@test.com", password: "johndoe123" });
+    expect(res.statusCode).toEqual(201);
+    expect(res.body.error).toEqual(false);
+  });
+
+  it("should successfully login", async () => {
+    const res = await request(app)
+      .post("/chat/api/user/login")
+      .send({ email: "johndoe@test.com", password: "johndoe123" });
+    token = res.headers && res.headers["set-cookie"];
+    expect(res.statusCode).toEqual(200);
+    expect(res.body.error).toEqual(false);
+  });
+
+  it("should successfully show user is logged in", async () => {
+    const res = await request(app)
+      .get("/chat/api/user/is-authenticated")
+      .set("Cookie", token);
+    expect(res.statusCode).toEqual(200);
+    expect(res.body.error).toEqual(false);
+    expect(res.body.payload.isAuthenticated).toEqual(true);
+  });
+
+  it("should successfully logout", async () => {
+    const res = await request(app)
+      .get("/chat/api/user/logout")
+      .set("Cookie", token);
+    expect(res.statusCode).toEqual(200);
+    expect(res.body.error).toEqual(false);
+    expect(res.body.payload.isAuthenticated).toEqual(false);
+  });
+
+  it("should throw 'Unauthorized' error once user has logged out", async () => {
+    const res = await request(app)
+      .get("/chat/api/user/is-authenticated");
+    expect(res.statusCode).toEqual(401);
+    expect(res.text).toEqual("Unauthorized");
   });
 });
